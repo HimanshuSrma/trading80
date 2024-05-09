@@ -1,8 +1,0 @@
-{
-    "compact": true,
-    "controlFlowFlattening": true,
-    "controlFlowFlatteningThreshold": 0.75,
-    "selfDefending": true,
-    "rotateStringArray": true
-  }
-  

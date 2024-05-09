@@ -1,8 +1,12 @@
 <!-- <p>trading works!</p> -->
-
-<!-- {{getCallAlertsData | json}} -->
-
 <div class="container">
+  <div class="indexData py-3 bg-white position-sticky top-0 z-1">
+    <marquee behavior="smooth" direction="left">
+      <div class="d-flex">
+        <div class="me-5" *ngFor="let data of indexData"><strong>{{data?.name}}</strong> {{data?.cmp}} <span [ngClass]="data.dir == '1' ? 'text-success':'text-danger'">({{data?.chgp}}%) <span><i *ngIf="data.dir == '1'" class="fa-solid fa-arrow-up text-success"></i><i *ngIf="data.dir != '1'"  class="fa-solid fa-arrow-down text-danger"></i></span> {{data?.chg}}</span></div>
+      </div>
+    </marquee>
+  </div>
   <div class="tabsWrapper my-4 row">
     <div class="col mb-2">
       <div class="tabs">
@@ -27,12 +31,18 @@
     </div>
     <div class="col text-center my-auto">
       <div class="row" *ngIf="updatedTime">
-        <div class="px-1 col-4 labelTxt">Last Updated</div>
-        <div class="px-1 col-8"><span class="bg-secondary text-white py-1 px-2 border-1 rounded-pill">{{ updatedTime | date : "MMM d, y, h:mm:ss a" }}</span></div>
+        <div class="px-1 col-4 labelTxt">Market Status</div>
+        <div class="px-1 col-4">
+          <svg height="10" width="10" class="blinking me-2">
+            <circle *ngIf="marketStatus=='open'" cx="5" cy="5" r="5" fill="green"/>
+            <circle *ngIf="marketStatus!='open'" cx="5" cy="5" r="5" fill="red"/>
+            Sorry, your browser does not support inline SVG.</svg>
+            {{marketStatus | titlecase}}
+          <!-- <span class="bg-secondary text-white py-1 px-2 border-1 rounded-pill">{{ updatedTime | date : "MMM d, y, h:mm:ss a" }}</span> -->
+        </div>
       </div>
     </div>
   </div>
-
   <div class="dataWrapper">
     <div class="row">
       <div class="col-md-6" *ngFor="let call of renderData">
@@ -43,7 +53,7 @@
           </div>
           <div class="card-body">
             <div class="row mx-0">
-              <div class="col-md-7">
+              <div class="col-md-7 mb-2">
                 <div class="row mb-1">
                   <div class="px-1 col-6 labelTxt">Company</div>
                   <div class="px-1 col-6 valueTxt" (click)="copyToClipboard(call.sname)">{{ call?.sname }}</div>
@@ -72,7 +82,7 @@
                 </div>
                 
               </div>
-              <div class="col-md-5">
+              <div class="col-md-5 mb-2">
                 <div class="row mb-1">
                   <div class="px-1 col-6 labelTxt">Date</div>
                   <div class="px-1 col-6">{{ call?.calltime }}</div>
@@ -100,6 +110,14 @@
                   <div class="px-1 col-6 labelTxt">Remaining</div>
                   <div class="px-1 col-6 " [ngClass]="(call.perfColor=='red')?'text-muted bg-info':''">{{ (call.potential - call?.performance) | number:'1.2-2' }}%</div>
                 </div>
+              </div>
+              <div class="col-7">
+                <a href="javascript:void('')" (click)="googleSearch(call.sname)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Google</a>
+                <!-- <span class="c-pointer" (click)="googleSearch(call.sname)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Google</span> -->
+              </div>
+              <div class="col-5">
+                <a href="javascript:void('')" (click)="googleSearch(call.sname,true)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Screener</a>
+                <!-- <span class="c-pointer" (click)="googleSearch(call.sname , true)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Screener</span> -->
               </div>
             </div>
           </div>

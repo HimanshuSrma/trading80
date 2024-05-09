@@ -18,7 +18,8 @@ export class TradingComponent {
   weeklyData: any;
   monthlyData: any;
   updatedTime: any;
-  
+  indexData:any;
+  marketStatus:string='';
   tabsData = [
     {
       value: "All",
@@ -37,21 +38,45 @@ export class TradingComponent {
     },
   ];
 
-
   constructor(private dataService: DataService,private clipboardService: ClipboardService) {
     console.log(navigator.clipboard);
     
   }
 
   async ngOnInit(): Promise<void> {
+    this.getHeaderData();
     let status = await this.changeTabActiveInactive('All');
     console.log("status", status);
   }
 
-  getData() {
+  getHeaderData() {
+    return new Promise((resolve, reject) => {
+      let url = "https://www.marketsmojo.com/portfolio-plus/stickeyheader";
+      this.dataService.callGetApi(url).subscribe(
+        (response: any) => {
+          console.log(response);
+          if (response.code == "200") {
+            this.marketStatus = response.data.market_status;
+            this.indexData = response.data.index_details;
+            resolve("Success");
+          } else {
+            reject("Something went wrong");
+          }
+        },
+        (error: any) => {
+          if (error.type == true) {
+            reject("Some error occured");
+          }
+        }
+      );
+    });
+  }
+
+  getScripData() {
     return new Promise((resolve, reject) => {
       let url = "https://frapi.marketsmojo.com/callsapi/getCallAlerts";
-      this.dataService.getTradingScripList(url).subscribe(
+      url = "https://benepik.in/kit-management-quote/call-alerts";
+      this.dataService.callGetApi(url).subscribe(
         (response: any) => {
           console.log(response);
           if (response.code == "200") {
@@ -80,7 +105,7 @@ export class TradingComponent {
   }
 
   async changeTabActiveInactive(val: string) {
-    let status = await this.getData() 
+    let status = await this.getScripData() 
     if (status == "Success") {
       console.log(val , this.newCalls);
       switch (val) {
@@ -123,6 +148,12 @@ export class TradingComponent {
       return 'bg-white text-info';
     }
     return
+  }
+
+  googleSearch(scripName: string, screener=false) {
+    let queryText = scripName + ` ${screener == true?'screener':'share price'}`;
+    let query = queryText.split(' ').join('+');
+    window.open("https://www.google.com/search?q=" + query, "_blank");
   }
 
   copyToClipboard(text: string) {

@@ -7,19 +7,25 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TradingComponent } from './Components/trading/trading.component';
 import { ClipboardModule } from 'ngx-clipboard';
+import { TradingviewComponent } from './Components/tradingview/tradingview.component';
+import { TradingviewWidgetModule } from 'angular-tradingview-widget';
+import { CommonModule } from '@angular/common';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    TradingComponent
+    TradingComponent,
+    TradingviewComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    CommonModule,
     HttpClientModule,
     FormsModule,
-    ClipboardModule
+    ClipboardModule,
+    TradingviewWidgetModule
   ],
   providers: [],
   bootstrap: [AppComponent]

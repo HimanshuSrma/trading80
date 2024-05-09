@@ -9,7 +9,7 @@ export class DataService {
   constructor(private http:HttpClient) { }
 
 
-  getTradingScripList(url:string){
+  callGetApi(url:string){
     return this.http.get(url);
   }
 
