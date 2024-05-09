@@ -52,7 +52,7 @@ export class TradingComponent {
   getHeaderData() {
     return new Promise((resolve, reject) => {
       let url = "https://www.marketsmojo.com/portfolio-plus/stickeyheader";
-      url = "benepik.in/kit-management-quote/call-sticky-header";
+      url = "https://benepik.in/kit-management-quote/call-sticky-header";
       this.dataService.callGetApi(url).subscribe(
         (response: any) => {
           console.log(response);
