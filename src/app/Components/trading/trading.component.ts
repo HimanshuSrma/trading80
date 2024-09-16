@@ -51,8 +51,9 @@ export class TradingComponent {
 
   getHeaderData() {
     return new Promise((resolve, reject) => {
-      let url = "https://www.marketsmojo.com/portfolio-plus/stickeyheader";
-      url = "https://benepik.in/kit-management-quote/call-sticky-header";
+      // let url = "https://www.marketsmojo.com/portfolio-plus/stickeyheader";
+      // url = "https://benepik.in/kit-management-quote/call-sticky-header";
+      let url = "http://3.92.239.97:8080/aiprocess/v1/stickeyheader";
       this.dataService.callGetApi(url).subscribe(
         (response: any) => {
           console.log(response);
@@ -75,8 +76,9 @@ export class TradingComponent {
 
   getScripData() {
     return new Promise((resolve, reject) => {
-      let url = "https://frapi.marketsmojo.com/callsapi/getCallAlerts";
-      url = "https://benepik.in/kit-management-quote/call-alerts";
+      // let url = "https://frapi.marketsmojo.com/callsapi/getCallAlerts";
+      let url = "http://3.92.239.97:8080/aiprocess/v1/getAllAlert";
+
       this.dataService.callGetApi(url).subscribe(
         (response: any) => {
           console.log(response);
