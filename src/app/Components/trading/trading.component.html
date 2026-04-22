@@ -1,4 +1,3 @@
-<!-- <p>trading works!</p> -->
 <div class="container">
   <div class="indexData py-3 bg-white position-sticky top-0 z-1">
     <marquee behavior="smooth" direction="left">
@@ -24,7 +23,7 @@
             class="tab"
             for="radio-{{ item.value }}"
             [ngClass]="{ selectedTab: selectedRadio == item.value }"
-            >{{ item.value }}</label
+            >{{ item.value }}<span *ngIf="item.value === 'My Trades' && myTrades.length > 0" class="ms-1 badge bg-primary rounded-pill" style="font-size:10px;">{{myTrades.length}}</span></label
           >
         </ng-container>
       </div>
@@ -38,18 +37,34 @@
             <circle *ngIf="marketStatus!='open'" cx="5" cy="5" r="5" fill="red"/>
             Sorry, your browser does not support inline SVG.</svg>
             {{marketStatus | titlecase}}
-          <!-- <span class="bg-secondary text-white py-1 px-2 border-1 rounded-pill">{{ updatedTime | date : "MMM d, y, h:mm:ss a" }}</span> -->
         </div>
       </div>
     </div>
   </div>
+
+  <!-- My Trades Empty State -->
+  <div *ngIf="selectedRadio === 'My Trades' && myTrades.length === 0" class="text-center text-muted py-5">
+    <i class="fa-regular fa-heart fa-3x mb-3 d-block"></i>
+    <p>No followed trades yet. Click <strong>Follow</strong> on any card to track your entry.</p>
+  </div>
+
   <div class="dataWrapper">
     <div class="row">
       <div class="col-md-6" *ngFor="let call of renderData">
-        <div class="card rounded-3 cardShadow border-0 mb-4">
-          <div class="d-flex justify-content-between">
-            <div class="bg-warning callCurrStatusDiv text-start px-2" *ngIf="call.reason == 'TARGET HIT'">Closed</div>
-            <div class="callCurrStatusDiv px-2" *ngIf="call.reason" [ngClass]="reasonClass(call.reason)">{{ call.reason | titlecase }}</div>
+        <div class="card rounded-3 cardShadow border-0 mb-4" [ngClass]="{'myTradeCard': selectedRadio === 'My Trades'}">
+          <div class="d-flex justify-content-between align-items-start">
+              <div class="bg-warning callCurrStatusDiv text-start px-2" *ngIf="call.reason == 'TARGET HIT'">Closed</div>
+              <div class="callCurrStatusDiv px-2" *ngIf="call.reason" [ngClass]="reasonClass(call.reason)">{{ call.reason | titlecase }}</div>
+            <button
+              *ngIf="call.reason !== 'TARGET HIT'"
+              class="followBtn me-2 mt-2"
+              [ngClass]="isFollowed(call) ? 'followBtn--active' : 'followBtn--inactive'"
+              (click)="followScrip(call)"
+              title="{{ isFollowed(call) ? 'Unfollow' : 'Follow this trade' }}"
+            >
+              <i class="fa-heart" [ngClass]="isFollowed(call) ? 'fa-solid' : 'fa-regular'"></i>
+              {{ isFollowed(call) ? 'Following' : 'Follow' }}
+            </button>
           </div>
           <div class="card-body">
             <div class="row mx-0">
@@ -64,7 +79,7 @@
                 </div>
                 <div class="row mb-1">
                   <div class="px-1 col-6 labelTxt">CMP</div>
-                  <div class="px-1 col-6">{{ call?.cmp }}</div>
+                  <div class="px-1 col-6">{{ selectedRadio === 'My Trades' ? getLiveCmp(call) : call?.cmp }}</div>
                 </div>
                 <div class="row mb-1">
                   <div class="px-1 col-6 labelTxt">SL</div>
@@ -80,7 +95,33 @@
                     {{ call?.pattern_date }}
                   </div>
                 </div>
-                
+                <!-- My Trades: entry price + my P&L -->
+                <ng-container *ngIf="selectedRadio === 'My Trades'">
+                  <div class="row mb-1">
+                    <div class="px-1 col-6 labelTxt">Entry Price</div>
+                    <div class="px-1 col-6 fw-bold">{{ call?.entryPrice }}</div>
+                  </div>
+                  <div class="row mb-1">
+                    <div class="px-1 col-6 labelTxt">Expected Profit</div>
+                    <div class="px-1 col-6 fw-bold" [ngClass]="getExpectedProfit(call) >= 0 ? 'text-success' : 'text-danger'">
+                      ₹{{ getExpectedProfit(call) | number:'1.2-2' }}
+                    </div>
+                  </div>
+                  <div class="row mb-1">
+                    <div class="px-1 col-6 labelTxt">My P&L</div>
+                    <div class="px-1 col-6 fw-bold" [ngClass]="getMyTradePerfColor(call)">
+                      ₹{{ getMyTradePnLAmount(call) | number:'1.2-2' }} ({{ getMyTradePerf(call) | number:'1.2-2' }}%)
+                    </div>
+                  </div>
+                  <div class="row mb-1" *ngIf="call?.quantity > 1">
+                    <div class="px-1 col-6 labelTxt">Quantity</div>
+                    <div class="px-1 col-6">{{ call?.quantity }}</div>
+                  </div>
+                  <div class="row mb-1">
+                    <div class="px-1 col-6 labelTxt">Followed On</div>
+                    <div class="px-1 col-6 valueTxt" style="font-size:11px;">{{ call?.followedAt | date:'MMM d, y' }}</div>
+                  </div>
+                </ng-container>
               </div>
               <div class="col-md-5 mb-2">
                 <div class="row mb-1">
@@ -113,16 +154,29 @@
               </div>
               <div class="col-7">
                 <a href="javascript:void('')" (click)="googleSearch(call.sname)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Google</a>
-                <!-- <span class="c-pointer" (click)="googleSearch(call.sname)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Google</span> -->
               </div>
               <div class="col-5">
                 <a href="javascript:void('')" (click)="googleSearch(call.sname,true)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Screener</a>
-                <!-- <span class="c-pointer" (click)="googleSearch(call.sname , true)"><i class="fa fa-external-link" aria-hidden="true"></i> View on Screener</span> -->
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+<!-- Entry Price Modal -->
+<div class="modal-overlay" *ngIf="showEntryModal" (click)="cancelFollow()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <h6 class="fw-bold mb-1">Follow Trade</h6>
+    <p class="text-muted mb-3" style="font-size:13px;">{{ pendingFollowCall?.sname }} — {{ pendingFollowCall?.reason }}</p>
+    <label class="form-label fw-bold" style="font-size:13px;">Your Entry Price</label>
+    <input type="number" [(ngModel)]="entryPrice" class="form-control mb-2" placeholder="e.g. 2691.70" min="0" autofocus />
+    <label class="form-label fw-bold" style="font-size:13px;">Quantity</label>
+    <input type="number" [(ngModel)]="quantity" class="form-control" placeholder="No. of shares" min="1" />
+    <div class="mt-3 d-flex gap-2">
+      <button class="btn btn-primary btn-sm flex-grow-1" (click)="confirmFollow()" [disabled]="!entryPrice || entryPrice <= 0">Confirm</button>
+      <button class="btn btn-outline-secondary btn-sm flex-grow-1" (click)="cancelFollow()">Cancel</button>
     </div>
   </div>
 </div>
